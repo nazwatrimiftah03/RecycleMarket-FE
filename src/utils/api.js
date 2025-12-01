@@ -1,8 +1,5 @@
-export const BASE_URL = 'http://localhost:5000/api'; 
+export const BASE_URL = 'https://recycle-market-be.vercel.app/api'; 
 
-/**
- * Mengambil token dari localStorage (digunakan untuk otorisasi).
- */
 export const getToken = () => {
   const adminData = localStorage.getItem("currentAdmin");
   if (adminData) {
@@ -74,4 +71,5 @@ export async function apiFetch(endpoint, options = {}) {
     console.error(`API Fetch Error [${endpoint}]:`, error);
     throw error;
   }
+
 }
