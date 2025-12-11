@@ -5,7 +5,8 @@ import { EcoTips } from "../pages/EcoTips.jsx";
 import { Team } from "../pages/Team.jsx";
 import { LoginAdmin } from "../pages/LoginAdmin.jsx";
 import { RegisterAdmin } from "../pages/RegisterAdmin.jsx";
-import { DashboardAdmin } from "../pages/DashboardAdmin.jsx";
+import { DashboardAdmin } from "../pages/DashboardAdmin.jsx"; // Ini sekarang Seller Dashboard
+import { SuperAdminDashboard } from "../pages/SuperAdminDashboard.jsx"; // BARU
 
 export const router = createBrowserRouter([
   {
@@ -26,7 +27,11 @@ export const router = createBrowserRouter([
     Component: RegisterAdmin,
   },
   {
-    path: "/dashboard-admin",
+    path: "/dashboard-admin", 
     Component: DashboardAdmin,
+  },
+  {
+    path: "/super-admin-dashboard", 
+    Component: SuperAdminDashboard,
   },
 ]);

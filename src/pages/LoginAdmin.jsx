@@ -1,5 +1,3 @@
-// src/pages/LoginAdmin.jsx
-
 import { useState } from "react";
 import { Link, useNavigate } from "react-router";
 import { Mail, Lock } from "lucide-react";
@@ -28,10 +26,15 @@ export function LoginAdmin() {
 
     const success = await login(formData.email, formData.password);
     if (success) {
-      alert("Berhasil login!"); 
-      navigate("/dashboard-admin");
+      // navigasi ditangani di sini, success alert sudah di AuthContext
+      const adminData = JSON.parse(localStorage.getItem("currentAdmin"));
+      if (adminData && adminData.isSuperAdmin) {
+        navigate("/super-admin-dashboard"); // Navigasi ke Super Admin Dashboard jika Super Admin
+      } else {
+        navigate("/dashboard-admin"); // Navigasi ke Seller Dashboard jika Admin biasa
+      }
     } else {
-      setError("Email atau password salah");
+      // Error ditangani di AuthContext
     }
 
     setLoading(false);
@@ -48,8 +51,8 @@ export function LoginAdmin() {
                 alt="ReCycle Market Logo" 
                 className="w-12 h-12 bg-green-600 rounded-full flex items-center justify-center border-2 border-green-700 size-12 text-white object-cover" />
             </div>
-            <h1 className="text-green-600 text-center">Login Admin</h1>
-            <p className="text-gray-600 text-center mt-2">Masuk sebagai admin ReCycle Market</p>
+            <h1 className="text-green-600 text-center">Login Seller/Admin</h1>
+            <p className="text-gray-600 text-center mt-2">Masuk sebagai seller atau admin ReCycle Market</p>
           </div>
 
           {error && (

@@ -1,8 +1,6 @@
-// src/pages/DashboardAdmin.jsx
-
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router";
-import { Plus, Trash2, LogOut, User, MapPin, Phone, Edit } from "lucide-react";
+import { Plus, Trash2, LogOut, User, MapPin, Phone, Edit, X } from "lucide-react";
 import LogoImage from "../assets/logo.png";
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
@@ -12,13 +10,18 @@ import { Card, CardContent } from "../components/ui/card";
 import { useAuth } from "../contexts/AuthContext";
 import { useProducts } from "../contexts/ProductContext";
 import { ImageWithFallback } from "../components/figma/ImageWithFallback";
+import { toast } from 'sonner';
 
 export function DashboardAdmin() {
   const navigate = useNavigate();
-  const { admin, logout, isAuthenticated } = useAuth();
+  const { admin, logout, isAuthenticated, isSuperAdmin } = useAuth();
   const { products, loading, error, addProduct, deleteProduct, updateProduct, fetchMyProducts } = useProducts();
 
   const [showForm, setShowForm] = useState(false);
+  
+  // State untuk mode Edit
+  const [editingProduct, setEditingProduct] = useState(null);
+
   const [formData, setFormData] = useState({
     name: "",
     description: "",
@@ -31,25 +34,26 @@ export function DashboardAdmin() {
   const [editingStockId, setEditingStockId] = useState(null);
   const [newStockValue, setNewStockValue] = useState(0);
 
-  // Efek untuk otentikasi dan memuat produk admin
   useEffect(() => {
     if (!isAuthenticated) {
       navigate("/login-admin");
     } else {
+      if (isSuperAdmin) {
+          navigate("/super-admin-dashboard");
+          return;
+      }
       fetchMyProducts();
     }
-  }, [isAuthenticated, navigate, fetchMyProducts]);
+  }, [isAuthenticated, navigate, fetchMyProducts, isSuperAdmin]);
 
-  if (!admin) return null;
+  if (!admin || isSuperAdmin) return null;
 
-  // Gunakan filter dari data products lokal (yang sudah di-fetch oleh fetchMyProducts)
   const myProducts = products.filter(p => p.adminId.toString() === admin.id.toString()); 
 
   const handleChange = (e) => {
     const { id, value, type } = e.target;
     setFormData((prev) => ({
       ...prev,
-      // Gunakan valueAsNumber untuk input type="number"
       [id]: type === 'number' ? (e.target.valueAsNumber || 0) : value,
     }));
   };
@@ -57,68 +61,94 @@ export function DashboardAdmin() {
   const handleImageChange = (e) => {
     const file = e.target.files?.[0];
     if (file) {
-      // validate file type
       if (!file.type.startsWith("image/")) {
-        alert("File harus berupa gambar!");
-        e.target.value = ''; // Clear file input
+        toast.error("File harus berupa gambar!");
+        e.target.value = ''; 
         setFormData(prev => ({ ...prev, imageFile: null }));
         setImagePreviewUrl("");
         return;
       }
 
-      // validate size (Diubah ke 5MB agar konsisten dengan asumsi backend)
       if (file.size > 5 * 1024 * 1024) { 
-        alert("Ukuran file maksimal 5MB!");
-        e.target.value = ''; // Clear file input
+        toast.error("Ukuran file maksimal 5MB!");
+        e.target.value = ''; 
         setFormData(prev => ({ ...prev, imageFile: null }));
         setImagePreviewUrl("");
         return;
       }
 
-      // 1. Simpan file mentah ke formData
       setFormData((prev) => ({
         ...prev,
-        imageFile: file, // SIMPAN FILE MENTAH
+        imageFile: file, 
       }));
       
-      // 2. Buat URL preview
-      setImagePreviewUrl(URL.createObjectURL(file)); // Gunakan URL.createObjectURL untuk preview
+      setImagePreviewUrl(URL.createObjectURL(file)); 
     } else {
-      setFormData(prev => ({ ...prev, imageFile: null }));
-      setImagePreviewUrl("");
+      // Jika mode edit dan user cancel pilih file, jangan reset preview lama
+      if (!editingProduct) {
+          setFormData(prev => ({ ...prev, imageFile: null }));
+          setImagePreviewUrl("");
+      }
     }
+  };
+
+  // Fungsi: Masuk Mode Edit
+  const handleEditClick = (product) => {
+    setEditingProduct(product);
+    setFormData({
+        name: product.name,
+        description: product.description,
+        price: product.price,
+        stock: product.stock,
+        imageFile: null // Reset input file baru
+    });
+    setImagePreviewUrl(product.image); // Tampilkan gambar lama
+    setShowForm(true); // Buka form
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  // Fungsi: Batal Edit / Tutup Form
+  const handleCancelForm = () => {
+    setShowForm(false);
+    setEditingProduct(null);
+    setFormData({ name: "", description: "", price: "", imageFile: null, stock: 1 });
+    setImagePreviewUrl("");
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Pastikan ada file gambar
-    if (!formData.imageFile) {
-        alert("Harap unggah file gambar untuk produk.");
+    // Validasi: Wajib ada gambar jika Tambah Baru
+    if (!editingProduct && !formData.imageFile) {
+        toast.error("Harap unggah file gambar untuk produk.");
         return;
     }
 
-    // Buat objek FormData untuk mengirim data dan file
     const productFormData = new FormData();
     productFormData.append('name', formData.name);
     productFormData.append('description', formData.description);
     productFormData.append('price', formData.price);
     productFormData.append('stock', formData.stock);
-    // Tambahkan file gambar dengan key 'image', sesuai yang diharapkan Multer di BE
-    productFormData.append('image', formData.imageFile); 
     
-    // Panggil addProduct dari context (yang kini memanggil API)
-    const success = await addProduct(productFormData);
+    if (formData.imageFile) {
+        productFormData.append('image', formData.imageFile); 
+    }
+    
+    let success = false;
+
+    if (editingProduct) {
+        // --- UPDATE ---
+        success = await updateProduct(editingProduct.id, productFormData);
+        // Toast success sudah ada di context
+    } else {
+        // --- CREATE ---
+        success = await addProduct(productFormData);
+        // Toast success sudah ada di context
+    }
 
     if (success) {
-        alert("Berhasil menambahkan barang!"); 
-        if (imagePreviewUrl) URL.revokeObjectURL(imagePreviewUrl); 
-        
-        setFormData({ name: "", description: "", price: "", imageFile: null, stock: 1 });
-        setImagePreviewUrl("");
-        setShowForm(false);
-    } else {
-        alert("Gagal menambahkan produk. Cek konsol untuk detail error.");
+        if (imagePreviewUrl && formData.imageFile) URL.revokeObjectURL(imagePreviewUrl); 
+        handleCancelForm(); // Reset form dan keluar mode edit
     }
   };
 
@@ -127,47 +157,35 @@ export function DashboardAdmin() {
     navigate("/");
   };
 
-  // Fungsi untuk memulai edit stok
   const startEditStock = (product) => {
     setEditingStockId(product.id);
     setNewStockValue(product.stock);
   };
 
-  // Fungsi untuk menyimpan perubahan stok
   const saveStock = async (product) => {
     const stockValue = parseInt(newStockValue);
     if (stockValue < 0 || isNaN(stockValue)) {
-        alert("Stok harus berupa angka positif.");
+        toast.error("Stok harus berupa angka positif.");
         return;
     }
     
-    // Panggil updateProduct dengan hanya data yang diubah
     const success = await updateProduct(product.id, {
         stock: stockValue, 
     });
 
     if (success) {
         setEditingStockId(null); 
-        alert("Berhasil mengubah stok!");
-    } else {
-        alert("Gagal menyimpan stok.");
     }
   };
 
-  // Modifikasi fungsi deleteProduct
   const handleDeleteProduct = async (id) => {
-    // Note: Konfirmasi hapus sudah ada di ProductContext.jsx
-    const success = await deleteProduct(id);
-    if(success) {
-      alert("Produk berhasil dihapus!");
-    } else {
-      alert("Gagal menghapus produk.");
-    }
+    if(!window.confirm("Apakah Anda yakin ingin menghapus produk ini?")) return;
+    await deleteProduct(id);
   };
 
   return (
     <div className="min-h-screen bg-gray-100">
-      {/* Header */}
+      {/* Header - Tetap Sesuai Asli */}
       <header className="bg-green-100 border-b-2 border-gray-300">
         <div className="max-w-6xl mx-auto px-4 py-3">
           <div className="flex items-center justify-between">
@@ -179,7 +197,7 @@ export function DashboardAdmin() {
                     className="w-8 h-8 bg-green-600 rounded-full flex items-center justify-center border-2 border-green-700 size-8 text-white object-cover"
                 />
               </div>
-              <span className="text-green-600">ReCycle Market - Admin</span>
+              <span className="text-green-600">ReCycle Market - Seller</span>
             </div>
             <Button onClick={handleLogout} variant="outline" className="gap-2">
               <LogOut className="size-4" />
@@ -190,38 +208,50 @@ export function DashboardAdmin() {
       </header>
 
       <div className="max-w-6xl mx-auto px-4 py-8">
-        {/* Welcome Section */}
-        <div className="bg-green-600 rounded-lg p-6 mb-6">
-          <h1 className="text-white mb-2">Dashboard Admin</h1>
+        {/* Welcome Section - Tetap Sesuai Asli */}
+        <div className="bg-green-500 rounded-lg p-6 mb-6">
+          <h1 className="text-black mb-2">Dashboard Seller</h1>
           <div className="flex flex-wrap gap-4 text-white text-sm">
             <div className="flex items-center gap-2">
-              <User className="size-4" />
-              <span>{admin.name}</span>
+              <User className="size-4 text-black"/>
+              <span className="text-black">{admin.name}</span>
             </div>
             <div className="flex items-center gap-2">
-              <Phone className="size-4" />
-              <span>{admin.phone}</span>
+              <Phone className="size-4 text-black" />
+              <span className="text-black">{admin.phone}</span>
             </div>
             <div className="flex items-center gap-2">
-              <MapPin className="size-4" />
-              <span>{admin.location}</span>
+              <MapPin className="size-4 text-black" />
+              <span className="text-black">{admin.location}</span>
             </div>
           </div>
         </div>
 
         {/* Add Product Button */}
         <div className="mb-6">
-          <Button onClick={() => setShowForm(!showForm)} className="bg-green-500 hover:bg-green-600 gap-2">
-            <Plus className="size-4" />
-            {showForm ? "Tutup Form" : "Tambah Barang Baru"}
-          </Button>
+          {/* Jika sedang tidak tampil form, munculkan tombol tambah */}
+          {!showForm && (
+            <Button onClick={() => setShowForm(true)} className="bg-green-500 hover:bg-green-600 gap-2 text-black">
+                <Plus className="size-4" />
+                Tambah Barang Baru
+            </Button>
+          )}
         </div>
 
-        {/* Add Product Form */}
+        {/* Form Tambah / Edit Barang */}
         {showForm && (
           <Card className="mb-6 bg-white border-2 border-gray-300">
             <CardContent className="p-6">
-              <h2 className="text-gray-900 mb-4">Form Tambah Barang</h2>
+              <div className="flex justify-between items-center mb-4">
+                  <h2 className="text-gray-900 font-bold">
+                      {editingProduct ? "Edit Barang" : "Form Tambah Barang"}
+                  </h2>
+                  {/* Tombol X Kecil untuk tutup form */}
+                  <Button variant="ghost" size="sm" onClick={handleCancelForm}>
+                      <X className="size-4" />
+                  </Button>
+              </div>
+
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="name">Nama Barang</Label>
@@ -238,18 +268,16 @@ export function DashboardAdmin() {
                   <Input id="price" type="text" placeholder="Contoh: Rp.100.000" value={formData.price} onChange={handleChange} required />
                 </div>
                 
-                {/* Field Stock */}
                 <div className="space-y-2">
                   <Label htmlFor="stock">Stok Tersedia</Label>
                   <Input id="stock" type="number" min="0" placeholder="Contoh: 5" value={formData.stock} onChange={handleChange} required />
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="imageFile">Upload Foto Barang</Label>
-                  <Input id="imageFile" type="file" accept="image/*" onChange={handleImageChange} className="cursor-pointer" required={!imagePreviewUrl} /> 
+                  <Label htmlFor="imageFile">Upload Foto Barang {editingProduct && "(Kosongkan jika tidak diganti)"}</Label>
+                  <Input id="imageFile" type="file" accept="image/*" onChange={handleImageChange} className="cursor-pointer" required={!editingProduct && !imagePreviewUrl} /> 
                   <p className="text-gray-500 text-sm">Format: JPG, PNG, WEBP (Max 5MB)</p>
 
-                  {/* Image Preview */}
                   {imagePreviewUrl && (
                     <div className="mt-3">
                       <p className="text-sm text-gray-700 mb-2">Preview:</p>
@@ -271,17 +299,23 @@ export function DashboardAdmin() {
                   <p className="text-sm text-gray-600">Lokasi: {admin.location}</p>
                 </div>
 
-                <Button type="submit" className="w-full bg-green-500 hover:bg-green-600">Simpan Barang</Button>
+                <div className="flex gap-2">
+                    <Button type="submit" className="flex-1 bg-green-500 hover:bg-green-600 text-black">
+                        {editingProduct ? "Simpan Perubahan" : "Simpan Barang"}
+                    </Button>
+                    <Button type="button" variant="outline" onClick={handleCancelForm} className="flex-1 border-gray-400">
+                        Batal
+                    </Button>
+                </div>
               </form>
             </CardContent>
           </Card>
         )}
 
-        {/* Products List */}
+        {/* Products List - CARD ASLI (bg-green-100) */}
         <div className="bg-white rounded-lg border-2 border-gray-300 p-6">
           <h2 className="text-gray-900 mb-4">Barang Saya ({myProducts.length})</h2>
           
-          {/* Tampilkan status loading dan error */}
           {loading && <div className="text-center py-8 text-gray-500">Memuat data produk Anda...</div>}
           {error && !loading && <div className="text-center py-8 text-red-700">{error}</div>}
 
@@ -338,7 +372,7 @@ export function DashboardAdmin() {
                                     onClick={() => startEditStock(product)}
                                     className="h-8 p-1 border-gray-400 text-gray-700 hover:bg-gray-500"
                                 >
-                                    <Edit className="size-4" />
+                                    <Edit className="size-4" />Jual
                                 </Button>
                             )}
                         </div>
@@ -349,11 +383,31 @@ export function DashboardAdmin() {
                         <p className="text-sm text-gray-700"><strong>WhatsApp:</strong> {product.sellerPhone}</p>
                       </div>
 
-                      {/* Menggunakan fungsi handleDeleteProduct yang baru */}
-                      <Button onClick={() => handleDeleteProduct(product.id)} variant="destructive" size="sm" className="w-full gap-2 mt-3">
-                        <Trash2 className="size-4" />
-                        Hapus Barang
-                      </Button>
+                      {/* Tombol Aksi: Edit dan Hapus Berdampingan */}
+                      <div className="flex gap-2 mt-3">
+                          {/* Tombol Edit */}
+                          <Button 
+                            onClick={() => handleEditClick(product)} 
+                            variant="outline" 
+                            size="sm" 
+                            className="flex-1 bg-white border-green-600 text-green-700 hover:bg-green-50"
+                          >
+                            <Edit className="size-4 mr-1" />
+                            Edit
+                          </Button>
+
+                          {/* Tombol Hapus */}
+                          <Button 
+                            onClick={() => handleDeleteProduct(product.id)} 
+                            variant="destructive" 
+                            size="sm" 
+                            className="flex-1 gap-1"
+                          >
+                            <Trash2 className="size-4" />
+                            Hapus
+                          </Button>
+                      </div>
+
                     </div>
                   </CardContent>
                 </Card>
