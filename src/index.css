@@ -1678,3 +1678,174 @@ html {
   inherits: false;
   initial-value: 0 0 #0000;
 }
+
+.scroll-x-container {
+    overflow-x: auto;
+    width: 100%;
+    -webkit-overflow-scrolling: touch; /* Smooth scroll di iOS */
+}
+
+.main-nav {
+    display: flex;
+    gap: 0.5rem; 
+}
+
+@media (max-width: 767px) {
+    .main-nav-desktop-links {
+        display: none !important; 
+    }
+}
+
+@media (min-width: 768px) {
+    .main-nav-mobile-trigger {
+        display: none !important; 
+    }
+}
+
+.responsive-table-wrapper {
+    width: 100%;
+    overflow-x: auto;
+}
+
+.responsive-table-wrapper table {
+    min-width: 1200px;
+    table-layout: fixed; 
+}
+
+.responsive-table-wrapper th,
+.responsive-table-wrapper td {
+    white-space: nowrap; 
+}
+
+.header-desktop-nav {
+  display: none !important; 
+}
+
+.header-mobile-trigger {
+  display: block !important; 
+}
+
+.header-mobile-menu {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  width: 100%;
+  background-color: white;
+  border-bottom: 2px solid #e5e7eb;
+  padding: 1rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  z-index: 50;
+}
+
+@media (min-width: 768px) {
+  .header-desktop-nav {
+    display: flex !important; 
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .header-mobile-trigger {
+    display: none !important;
+  }
+
+  .header-mobile-menu {
+    display: none !important; 
+  }
+}
+
+.judul-home{
+  color: var(--color-black);
+  font-weight: 600;
+  margin-bottom: calc(var(--spacing) * 3);
+  overflow: hidden; 
+  white-space: nowrap; 
+  border-right: 3px solid; 
+  width: 0; 
+  font-family: monospace; 
+  font-size: 1.5rem;
+  font-weight: bold;
+  animation: 
+    typing 3.5s steps(40, end) forwards,
+    blink-caret 0.75s step-end infinite;
+}
+
+@keyframes typing {
+  from { width: 0 }
+  to { width: 100% }
+}
+
+@keyframes blink-caret {
+  from, to { border-color: transparent }
+  50% { border-color: currentColor; }
+}
+
+@keyframes fadeIn {
+  from { 
+    opacity: 0; 
+    transform: translateY(10px);
+  }
+  to { 
+    opacity: 1; 
+    transform: translateY(0); 
+  }
+}
+
+.judul-eco{
+  color: var(--color-black);
+  font-size: calc(var(--spacing) * 12.5); 
+  font-weight: 800; 
+  letter-spacing: -0.025em; 
+  flex-shrink: 0; 
+}
+
+.subjudul-eco{
+  font-size: calc(var(--spacing) * 7.5);
+  font-weight: 500;
+  line-height: calc(var(--spacing) * 10);
+  overflow: hidden; 
+  white-space: nowrap; 
+  border-right: 3px solid; 
+  width: 0; 
+  font-family: monospace; 
+  font-size: 1.5rem;
+  font-weight: bold;
+  animation: 
+    typing 3.5s steps(40, end) forwards,
+    blink-caret 0.75s step-end infinite;
+}
+
+.judul-team{
+  color: var(--color-black);
+  font-size: calc(var(--spacing) * 7.5);
+  font-weight: 600;
+  margin-bottom: calc(var(--spacing) * 3);
+}
+
+@media (max-width: 768px) {
+  .judul-home {
+    white-space: normal; 
+    width: auto; 
+    overflow: visible;
+    border-right: none; 
+    font-size: 1.1rem;
+    text-align: center;
+    line-height: 1.5;
+    opacity: 0; 
+    animation: fadeIn 1.5s ease-out forwards;
+  }
+
+  .subjudul-eco {
+    white-space: normal; 
+    width: auto; 
+    overflow: visible;
+    border-right: none; 
+    font-size: 1.1rem;
+    text-align: center;
+    line-height: 1.5;
+    opacity: 0; 
+    animation: fadeIn 1.5s ease-out forwards;
+  }
+}

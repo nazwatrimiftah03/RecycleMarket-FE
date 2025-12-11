@@ -37,16 +37,10 @@ export function Home() {
   return (
     <div className="max-w-6xl mx-auto px-4 py-8">
       {/* Hero Section */}
-      <div className="bg-green-600 rounded-lg p-6 mb-6">
-        <h1 className="text-black text-3xl font-semibold mb-3">Tentang ReCycle Market</h1>
-        <p className="text-black text-sm leading-relaxed">
-          Recycle Market adalah sebuah Website yang menyediakan layanan dalam memberikan informasi tentang
-          produk barang bekas yang dijual, dimana setiap produk dilengkapi dengan informasi detail,
-          termasuk nama, deskripsi, foto, lokasi, dan harga yang lebih transparan, harga jualannya sehingga dapat
-          membantu mengurangi kesulitan dalam mencari barang bekas berkualitas oleh pengguna, Website ini juga
-          memiliki fitur untuk penjual untuk ingin memposting barang jualannya sehingga dapat dilihat oleh
-          pembeli untuk mencari barang yang ingin mereka beli.
-        </p>
+      <div className="bg-green-500 rounded-lg p-6 mb-6 flex items-center justify-center text-center">
+        <div>
+        <h1 className="judul-home">Selamat Datang di Recycle Market, Tempat jual beli barang bekas terbaik</h1>
+        </div>
       </div>
 
       {/* Search Bar */}

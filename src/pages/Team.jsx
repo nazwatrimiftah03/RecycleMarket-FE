@@ -3,7 +3,6 @@ import TeamPhoto1 from "../assets/team_member_1.png";
 import TeamPhoto2 from "../assets/team_member_2.png";
 import TeamPhoto3 from "../assets/team_member_3.png";
 
-
 export function Team() {
   const teamMembers = [
     { name: "Johannes", photo: TeamPhoto1, Nim: "241401001" },
@@ -14,7 +13,19 @@ export function Team() {
   return (
     <div className="min-h-screen bg-gray-100">
       <div className="max-w-6xl mx-auto px-4 py-8">
-        
+         <div className="bg-green-500 rounded-lg p-6 mb-6">
+          <div>
+        <h1 className="judul-team">Tentang ReCycle Market</h1>
+        </div>
+        <p className="text-black text-sm leading-relaxed">
+          Recycle Market adalah sebuah Website yang menyediakan layanan dalam memberikan informasi tentang
+          produk barang bekas yang dijual, dimana setiap produk dilengkapi dengan informasi detail,
+          termasuk nama, deskripsi, foto, lokasi, dan harga yang lebih transparan, harga jualannya sehingga dapat
+          membantu mengurangi kesulitan dalam mencari barang bekas berkualitas oleh pengguna, Website ini juga
+          memiliki fitur untuk penjual untuk ingin memposting barang jualannya sehingga dapat dilihat oleh
+          pembeli untuk mencari barang yang ingin mereka beli.
+        </p>
+      </div>
         <div className="bg-white rounded-lg border border-gray-200 p-6">
           <h2 className="text-4xl text-gray-900 mb-4">Meet the Team: Team Yareuuu</h2>
           <p className="text-gray-600">Projek ini dibuat oleh Team Yareuuu - Website Recycle Market.</p>

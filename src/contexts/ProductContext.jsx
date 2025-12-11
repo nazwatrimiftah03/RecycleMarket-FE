@@ -1,4 +1,5 @@
-import { createContext, useContext, useState, useEffect, useCallback } from "react"; // <-- BARU: Tambah useCallback
+import { createContext, useContext, useState, useEffect, useCallback } from "react"; 
+import { toast } from 'sonner'; // BARU: Impor toast
 import { apiFetch } from '../utils/api'; 
 
 const ProductContext = createContext(undefined);
@@ -26,7 +27,7 @@ export function ProductProvider({ children }) {
     }
   }, []);
 
-  // Fungsi untuk mengambil produk milik admin (Private: Dashboard Admin)
+  // Fungsi untuk mengambil produk milik admin (Private: Dashboard Seller)
   const fetchMyProducts = useCallback(async () => {
     setLoading(true);
     setError(null);
@@ -43,6 +44,23 @@ export function ProductProvider({ children }) {
       setLoading(false);
     }
   }, []);
+  
+  // BARU: Fungsi untuk mengambil SEMUA produk (Super Admin)
+  const fetchAllProducts = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+        const data = await apiFetch('/products/all');
+        setProducts(data);
+    } catch (err) {
+        console.error('Error fetching all products:', err);
+        setError('Gagal memuat semua produk. Mungkin sesi telah berakhir.');
+        setProducts([]);
+    } finally {
+        setLoading(false);
+    }
+  }, []);
+
 
   // Muat produk yang tersedia saat aplikasi dimulai
   useEffect(() => {
@@ -62,9 +80,11 @@ export function ProductProvider({ children }) {
 
       // Update state FE
       setProducts((prevProducts) => [newProduct, ...prevProducts]);
+      toast.success("Berhasil menambahkan barang!"); 
       return true;
     } catch (error) {
       console.error("Error adding product:", error.data?.message || error.message);
+      toast.error(error.data?.message || "Gagal menambahkan produk."); 
       return false;
     }
   };
@@ -85,18 +105,18 @@ export function ProductProvider({ children }) {
       setProducts((prevProducts) => 
         prevProducts.map((p) => (p.id === updatedProduct.id ? updatedProduct : p))
       );
+      toast.success("Berhasil mengubah data produk."); 
       return true;
     } catch (error) {
       console.error("Error updating product:", error.data?.message || error.message);
+      toast.error(error.data?.message || "Gagal mengubah data produk."); 
       return false;
     }
   };
 
   // Menggantikan fungsi deleteProduct lama
-  const deleteProduct = async (id) => {
-    if (!window.confirm("Apakah Anda yakin ingin menghapus produk ini?")) {
-        return false;
-    }
+  const deleteProduct = async (id, isSuperAdmin = false) => {
+    // Menghilangkan window.confirm dari sini, konfirmasi ditangani di komponen FE
     
     try {
       await apiFetch(`/products/${id}`, {
@@ -105,9 +125,11 @@ export function ProductProvider({ children }) {
       
       // Update state FE
       setProducts((prevProducts) => prevProducts.filter((p) => p.id !== id));
+      toast.success("Produk berhasil dihapus."); 
       return true;
     } catch (error) {
       console.error("Error deleting product:", error.data?.message || error.message);
+      toast.error(error.data?.message || "Gagal menghapus produk."); 
       return false;
     }
   };
@@ -127,7 +149,8 @@ export function ProductProvider({ children }) {
             updateProduct, 
             getProductsByAdmin,
             fetchAvailableProducts, 
-            fetchMyProducts,        
+            fetchMyProducts,   
+            fetchAllProducts, // BARU
         }}
     >
       {children}

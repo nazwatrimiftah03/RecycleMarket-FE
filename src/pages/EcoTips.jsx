@@ -31,18 +31,15 @@ const tips = [
 export function EcoTips() {
   return (
     <div className="max-w-6xl mx-auto px-4 py-8">
-      <div className="bg-green-600 rounded-lg p-8 mb-8 flex flex-col md:flex-row items-center justify-start gap-6">
+      <div className="bg-green-500 rounded-lg p-8 mb-8 flex flex-col md:flex-row items-center justify-start gap-6">
         
-        <h1 className="text-black text-5xl font-extrabold tracking-tight shrink-0">
+        <h1 className="judul-eco">
           Eco-Tips
         </h1>
         
         <div className="text-white text-right flex-1">
-          <h2 className="text-3xl font-medium leading-tight">
-            Mulai Hidup Ramah
-          </h2>
-          <h2 className="text-3xl font-medium leading-tight">
-            Lingkungan dari Sekarang
+          <h2 className="subjudul-eco">
+            Mulai Hidup Ramah Lingkungan dari Sekarang
           </h2>
         </div>
       </div>
@@ -52,7 +49,7 @@ export function EcoTips() {
         {tips.map((tip) => (
           <Card 
             key={tip.id} 
-            className="bg-white border-2 border-gray-300 overflow-hidden hover:shadow-lg transition-shadow"
+            className="bg-green-100 border-2 border-green-300 overflow-hidden hover:shadow-lg transition-shadow"
           >
             <CardContent className="p-0">
               

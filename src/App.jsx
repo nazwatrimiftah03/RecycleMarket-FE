@@ -1,4 +1,5 @@
 import { RouterProvider } from 'react-router'
+import { Toaster } from 'sonner'
 import { router } from './utils/routes'
 import { AuthProvider } from './contexts/AuthContext.jsx'
 import { ProductProvider } from './contexts/ProductContext.jsx'
@@ -8,6 +9,7 @@ export default function App() {
     <AuthProvider>
       <ProductProvider>
         <RouterProvider router={router} />
+        <Toaster position="top-right" richColors /> {/* BARU: Tambahkan Toaster */}
       </ProductProvider>
     </AuthProvider>
   )

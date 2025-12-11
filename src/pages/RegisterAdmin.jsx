@@ -1,5 +1,3 @@
-// src/pages/RegisterAdmin.jsx
-
 import { useState } from "react";
 import { Link, useNavigate } from "react-router";
 import { User, Mail, Phone, MapPin, Lock } from "lucide-react";
@@ -48,6 +46,7 @@ export function RegisterAdmin() {
 
     setLoading(true);
 
+    // alert() sudah diganti toast di AuthContext
     const success = await register(
       formData.name,
       formData.email,
@@ -57,11 +56,9 @@ export function RegisterAdmin() {
     );
 
     if (success) {
-      // Tampilkan notifikasi berhasil mendaftar
-      alert("Berhasil mendaftar! Silakan login."); 
       navigate("/login-admin");
     } else {
-      setError("Email sudah terdaftar!");
+      // Error sudah di-toast di AuthContext
     }
 
     setLoading(false);
@@ -79,11 +76,11 @@ export function RegisterAdmin() {
                 alt="ReCycle Market Logo" 
                 className="w-12 h-12 bg-green-600 rounded-full flex items-center justify-center border-2 border-green-700 size-12 text-white object-cover" />
             </div>
-            <h1 className="text-green-600 text-center">Register Admin</h1>
-            <p className="text-gray-600 text-center mt-2">Daftar sebagai admin ReCycle Market</p>
+            <h1 className="text-green-600 text-center">Register Seller</h1>
+            <p className="text-gray-600 text-center mt-2">Daftar sebagai Seller ReCycle Market</p>
           </div>
 
-          {/* Error Message */}
+          {/* Error Message (untuk validasi lokal) */}
           {error && (
             <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-4 text-sm">{error}</div>
           )}
